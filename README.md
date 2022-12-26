@@ -12,3 +12,10 @@
 
 ## 2022-12-25
 > jwt를 위한 프로젝트 및 yml세팅을 완료했다. 앞으로 jwt에 대한 공부 내용은 이쪽으로 담을 생각이고 인증과 허가에 대한 범용적인 방식인 jwt를 깊이 학습할 수 있었으면 좋겠다.
+
+## 2022-12-26
+> jwt에서는 세션에 저장하지 않고 고유 토큰을 가지고 인증과 응답을 처리한다. 그래서 securityconfig에서 세션을 사용하지 않도록
+> sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)를 붙여주고 .httpBasic().disable()로 발생하는 인증절차를 다 disable처리한다.
+> 그리고 filter를 만들어서 http.addFilterBefore(new MyFilter1(),LogoutFilter.class) 설정을 해주고 어떤 filter보다도 먼저 처리할 수 있게 작성했다. jwt는 세션을 사용하지 않다보니
+> filter처리를 해서 인증을 관리해야하는 번거로움이 있지만 그만큼 안정성과 확장성 뛰어나다는 것을 알게되었다. 초반에만 고생하면 유지보수하기에도 편할것이다. 그전 OAuth공부하며
+> 만들었던 수많은 로그인 세션들을 생각하면 이게 양반일수도 있다.
