@@ -19,3 +19,9 @@
 > 그리고 filter를 만들어서 http.addFilterBefore(new MyFilter1(),LogoutFilter.class) 설정을 해주고 어떤 filter보다도 먼저 처리할 수 있게 작성했다. jwt는 세션을 사용하지 않다보니
 > filter처리를 해서 인증을 관리해야하는 번거로움이 있지만 그만큼 안정성과 확장성 뛰어나다는 것을 알게되었다. 초반에만 고생하면 유지보수하기에도 편할것이다. 그전 OAuth공부하며
 > 만들었던 수많은 로그인 세션들을 생각하면 이게 양반일수도 있다.
+
+## 2022-12-27
+> jwt로그인을 하기 위해 사전작업이 간단한줄 알았지만 filter설정에서 까다로운 부분들이 있었다. .apply(new MyCustomDsl()) securityConfig를 통해 AbstractHttpConfigurer를 extends
+> 하여 만든 filter를 만들어준다. principaldetails나 principaldetailsservice를 만들어줬다(이 부분은 자주했던 부분이므로 설명 스킵)/login요청을 하면 로그인 시도를 위해서 실행되는 
+> 함수인 attemptAuthentication에서 로그인을 시도하면 어떻게 반응하는지 테스트까지 진행했다. 많은 세팅부분이있어서 손이 많이 가는게 확실한거 같다. 어제는 간단하다고 생각했지만
+> 그리 간단하지 않다는 것을 몇분만에 알게 되었다. 내일까지해서 이 jwt를 마무리할 생각이다.
