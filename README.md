@@ -25,3 +25,49 @@
 > 하여 만든 filter를 만들어준다. principaldetails나 principaldetailsservice를 만들어줬다(이 부분은 자주했던 부분이므로 설명 스킵)/login요청을 하면 로그인 시도를 위해서 실행되는 
 > 함수인 attemptAuthentication에서 로그인을 시도하면 어떻게 반응하는지 테스트까지 진행했다. 많은 세팅부분이있어서 손이 많이 가는게 확실한거 같다. 어제는 간단하다고 생각했지만
 > 그리 간단하지 않다는 것을 몇분만에 알게 되었다. 내일까지해서 이 jwt를 마무리할 생각이다.
+
+## 2022-12-28
+> 마지막으로 jwt토큰을 만들어서 최종적으로 서버를 구축해보았다. JwtAuthenticationFilter를 통해 인증을 완료하기 위해서 필터 안의 attemptAuthentication에서 DB에 있는 User정보와 비교> 비교하였다. attemptAuthentication실행 후 인증이 정상적으로 되었으면 successfulAuthentication함수가 실행되는데 여기에 토큰을 만들어준다.
+
+```
+String jwtToken = JWT.create()
+				.withSubject("newbietop토큰")
+				.withExpiresAt(new Date(System.currentTimeMillis()+(60000*10)))
+				.withClaim("id", principalDetails.getUser().getId())
+				.withClaim("username", principalDetails.getUser().getUsername())
+				.sign(Algorithm.HMAC512("newbietop"));
+        //임의로 만들어준 토큰이다 실제로는 소스에 있는거처럼 propertise를 만들어서 설정해주는 것이 좋다.
+```
+> 그 후 다음 필터인 JwtAuthorizaionFilter를 추가적으로 만들어서 login한 유저의 토큰이 도메인으로 접속할 때 ROLE을 잘 가지고 있는지를 토큰으로 비교한다. JwtAuthorizaionFilter
+> 생성자를 만들고 doFilterInternal선언해서 인증이나 권한이 필요한 주소요청이 있을 때 해당 필터를 거친다. 
+```
+String jwtHeader = request.getHeader("Authorization");
+		System.out.println(jwtHeader+"==============");
+		
+		//header가 있는지 확인
+		if(jwtHeader == null || !jwtHeader.startsWith("Bearer")) {
+			chain.doFilter(request, response);
+			return;
+		}
+		
+		//jwt토큰을 검증해서 정상적인 사용자인지 확인
+		String jwtToken = request.getHeader("Authorization").replace("Bearer ", "");
+		
+		String username = JWT.require(Algorithm.HMAC512("newbietop")).build().verify(jwtToken).getClaim("username").asString();
+		
+		//서명이 정상적으로 됨
+		if(username != null) {
+			User userEntity = userRepository.findByUsername(username);
+			PrincipalDetails principalDetails = new PrincipalDetails(userEntity);
+			
+			//Jwt 토큰 서명을 통해 서명이 정상이면 Authentication 객체를 만들어준다.
+			Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails,null,principalDetails.getAuthorities());
+			
+			//강제로 시큐리티의 세션에 접근하여 Authentication 객체를 저장
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			chain.doFilter(request, response);
+		}
+ ```
+ >까지하면 요청한 도메인으로 해당 role을 가지고있으면 정상적으로 return하게 된다!! 이로써 전체적인 jwt토큰을 사용한 로그인 시스템을 구성해보았다. 나름 시간을 잡아먹었지만 시큐리티
+ >와 jwt를 테스트해보기에는 적절한 시간이었다고 생각한다. 이제 앞서배운 OAuth와 jwt를 사용해서 react를 활용한 나만의 서버를 구축할 예정이다!
+
